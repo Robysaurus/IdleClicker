@@ -25,4 +25,6 @@ C:\Users\Tyler Rose\RiderProjects\IdleClicker\obj\Debug\net6.0\IdleClicker.pdb
 C:\Users\Tyler Rose\RiderProjects\IdleClicker\obj\Debug\net6.0\IdleClicker.genruntimeconfig.cache
 C:\Users\Tyler Rose\RiderProjects\IdleClicker\obj\Debug\net6.0\ref\IdleClicker.dll
 C:\Users\Tyler Rose\RiderProjects\IdleClicker\bin\Debug\net6.0\Content\ClickerCircle.xnb
-C:\Users\Tyler Rose\RiderProjects\IdleClicker\bin\Debug\net6.0\Content\Font.xnb
+C:\Users\Tyler Rose\RiderProjects\IdleClicker\bin\Debug\net6.0\Content\PixelMonoBoldFont.xnb
+C:\Users\Tyler Rose\RiderProjects\IdleClicker\bin\Debug\net6.0\Content\PixelSCFont.xnb
+C:\Users\Tyler Rose\RiderProjects\IdleClicker\bin\Debug\net6.0\Content\UpgradeButton.xnb

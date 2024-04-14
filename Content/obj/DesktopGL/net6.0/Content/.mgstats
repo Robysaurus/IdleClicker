@@ -1,3 +1,5 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
 "C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/ClickerCircle.png","C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/bin/DesktopGL/Content/ClickerCircle.xnb","TextureProcessor","Texture2DContent",2970,640085,0.2554804
-"C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/Font.spritefont","C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/bin/DesktopGL/Content/Font.xnb","FontDescriptionProcessor","SpriteFontContent",2087,37919,0.2730002
+"C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/PixelMonoBoldFont.spritefont","C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/bin/DesktopGL/Content/PixelMonoBoldFont.xnb","FontDescriptionProcessor","SpriteFontContent",2087,37919,0.3129422
+"C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/PixelSCFont.spritefont","C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/bin/DesktopGL/Content/PixelSCFont.xnb","FontDescriptionProcessor","SpriteFontContent",2080,21535,0.0276556
+"C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/UpgradeButton.png","C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/bin/DesktopGL/Content/UpgradeButton.xnb","TextureProcessor","Texture2DContent",248,10085,0.0389399

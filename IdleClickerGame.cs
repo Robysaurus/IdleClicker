@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using IdleClicker.Sprites;
+using IdleClicker.Util.InputHandling;
+using IdleClicker.Util.Shapes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Rectangle = IdleClicker.Util.Shapes.Rectangle;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace IdleClicker;
 
@@ -11,22 +17,36 @@ namespace IdleClicker;
 public class IdleClickerGame : Game {
     private readonly GraphicsDeviceManager graphics;
     private SpriteBatch spriteBatch;
-    
-    private readonly int resWidth = 400;
-    private readonly int resHeight = 400;
-    private int virtualWidth = 400;
-    private int virtualHeight = 400;
-    private Matrix scaleMatrix;
-    private Viewport viewport;
-    
-    private bool isResizing;
-    private bool leftClickedBefore = false;
-    //private bool rightClickedBefore = false;
 
-    private Texture2D clickerCircleTexture;
-    private SpriteFont monoPixelFont;
+    private const int resWidth = 400;
+    private const int resHeight = 400;
+    private static int virtualWidth = 400;
+    private static int virtualHeight = 400;
+    private static Matrix scaleMatrix;
+    private static Viewport viewport;
+    private static float aspect = virtualWidth / (float)resWidth;
+    
+    private static bool isResizing;
+    private static bool leftClickedBefore = false;
+    //private static bool rightClickedBefore = false;
 
-    private double moneys = 0;
+    private static Texture2D clickerCircleTexture;
+    private static Texture2D upgradeButtonTexture;
+    private static SpriteFont pixelMonoBoldFont;
+    private static SpriteFont pixelSCFont;
+
+    private static Sprite clickerSprite;
+    private static Sprite upgradeSprite;
+    public static List<Sprite> sprites;
+
+    private static long moneys = 0;
+    //private static long moneysPerSecond = 0;
+    private static long clickPower = 1;
+    private static long nextUpgrade = 2;
+    private static long upgradeCost = 25;
+    private static int upgradeNum = 1;
+
+    private static bool collision = false;
 
     public IdleClickerGame() {
         graphics = new GraphicsDeviceManager(this);
@@ -39,10 +59,18 @@ public class IdleClickerGame : Game {
         Window.ClientSizeChanged += OnResize;
     }
 
-    private void OnResize(Object sender, EventArgs args) {
+    private void OnResize(object sender, EventArgs args) {
         if (!isResizing && Window.ClientBounds is{ Width: > 0, Height: > 0 }) {
             isResizing = true;
+            Viewport oldViewport = viewport;
+            float oldAspect = aspect;
             UpdateScaleMatrix();
+
+            foreach (Sprite s in sprites) {
+                s.GetShape().Move(new Vector2((s.GetShape().getPosition().X - oldViewport.X) / oldAspect * aspect + viewport.X, (s.GetShape().getPosition().Y - oldViewport.Y) / oldAspect * aspect + viewport.Y));
+                s.GetShape().Rescale(aspect / oldAspect);
+            }
+            
             isResizing = false;
         }
     }
@@ -56,19 +84,58 @@ public class IdleClickerGame : Game {
     protected override void LoadContent() {
         spriteBatch = new SpriteBatch(GraphicsDevice);
         clickerCircleTexture = Content.Load<Texture2D>("ClickerCircle");
-        monoPixelFont = Content.Load<SpriteFont>("Font");
+        upgradeButtonTexture = Content.Load<Texture2D>("UpgradeButton");
+        pixelMonoBoldFont = Content.Load<SpriteFont>("PixelMonoBoldFont");
+        pixelSCFont = Content.Load<SpriteFont>("PixelSCFont");
+
+        
+        clickerSprite = new Sprite(clickerCircleTexture, new Vector2(graphics.PreferredBackBufferWidth / 2f, graphics.PreferredBackBufferHeight / 2f), new Vector2(clickerCircleTexture.Width / 2f, clickerCircleTexture.Height / 2f), 0.5f, 0f, new Circle(clickerCircleTexture.Width / 4f, new Vector2(graphics.PreferredBackBufferWidth / 2f, graphics.PreferredBackBufferHeight / 2f)),
+            (list) => {
+                list[0] = moneys;
+                list[1] = clickPower;
+                list[0]+=list[1];
+                UpdateMoneys(list[0]);
+            }, new List<long>(2){moneys, clickPower});
+        upgradeSprite = new Sprite(upgradeButtonTexture, new Vector2(graphics.PreferredBackBufferWidth - upgradeButtonTexture.Width, 0), Vector2.Zero, 1f, 0f, new Rectangle(new Microsoft.Xna.Framework.Rectangle(new Point(graphics.PreferredBackBufferWidth - upgradeButtonTexture.Width, 0), new Point(upgradeButtonTexture.Width))),
+            (list) => {
+                list[0] = moneys;
+                list[1] = upgradeCost;
+                list[2] = upgradeNum;
+                list[3] = clickPower;
+                list[4] = nextUpgrade;
+                if (list[0] >= list[1]) {
+                    list[0] -= list[1];
+                    list[1] *= (long)Math.Pow(1.75, list[2]);
+                    list[3] = list[4];
+                    list[4] += (long)Math.Pow(1.5, list[2]);
+                    list[2]++;
+                    UpdateMoneys(list[0]);
+                    UpdateUpgradeCost(list[1]);
+                    UpdateUpgradeNum();
+                    UpdateClickPower(list[3]);
+                    UpdateNextUpgrade(list[4]);
+                }
+            }, new List<long>(){moneys, upgradeCost, upgradeNum, clickPower, nextUpgrade});
+        sprites = new List<Sprite>(2){
+            clickerSprite, upgradeSprite
+        };
     }
 
     protected override void Update(GameTime gameTime) {
         //KeyboardState keyboardState = Keyboard.GetState();
         MouseState mouseState = Mouse.GetState();
-
-        // TODO: Add your update logic here
+        Vector2 mousePos = new Vector2(mouseState.X, mouseState.Y);
+        
         if (IsActive) {
-            if (mouseState.LeftButton == ButtonState.Pressed && !leftClickedBefore) { 
-                if (IsInCircle(mouseState.X, mouseState.Y, GraphicsDevice.PresentationParameters.BackBufferWidth/2f, GraphicsDevice.PresentationParameters.BackBufferHeight/2f, clickerCircleTexture.Width / 4f * (virtualWidth / (float)resWidth))) {
-                    moneys++;
+            collision = false;
+            foreach (Sprite s in sprites) {
+                if (s.GetShape().Contains(mousePos)) {
+                    collision = true;
                 }
+            }
+            
+            if (mouseState.LeftButton == ButtonState.Pressed && !leftClickedBefore) {
+                MouseInputHandling.HandleMouseClick(mousePos);
                 leftClickedBefore = true;
             }else if(mouseState.LeftButton == ButtonState.Released){
                 leftClickedBefore = false;
@@ -78,17 +145,18 @@ public class IdleClickerGame : Game {
         base.Update(gameTime);
     }
 
-    private static bool IsInCircle(float x, float y, float centerX, float centerY, float radius) {
-        return Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2)) <= radius;
-    }
-
     protected override void Draw(GameTime gameTime) {
         GraphicsDevice.Clear(Color.Gray);
         GraphicsDevice.Viewport = viewport;
         
         spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: scaleMatrix);
-        spriteBatch.Draw(clickerCircleTexture, new Vector2(graphics.PreferredBackBufferWidth/2f, graphics.PreferredBackBufferHeight/2f), null, Color.White, 0f, new Vector2(clickerCircleTexture.Width/2f, clickerCircleTexture.Height/2f), new Vector2(0.5f,0.5f), SpriteEffects.None, 0);
-        spriteBatch.DrawString(monoPixelFont, new StringBuilder($"Moneys: {moneys}\nX: {Mouse.GetState().X}\nY: {Mouse.GetState().Y}"), Vector2.Zero, Color.ForestGreen, 0f, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+        foreach (Sprite s in sprites) {
+            spriteBatch.Draw(s.GetTexture(), s.GetPosition(), null, Color.White, s.GetRotation(), s.GetOrigin(), s.GetScale(), SpriteEffects.None, 0);
+        }
+        
+        spriteBatch.DrawString(pixelMonoBoldFont, new StringBuilder($"Moneys: {moneys}\nClick Power: {clickPower}\nNext Upgrade: {nextUpgrade}\nUpgrade Cost: {upgradeCost}\nX: {Mouse.GetState().X}\nY: {Mouse.GetState().Y}"), Vector2.Zero, Color.ForestGreen, 0f, Vector2.Zero, 1, SpriteEffects.None, 0);
+        
         spriteBatch.End();
 
         base.Draw(gameTime);
@@ -99,15 +167,16 @@ public class IdleClickerGame : Game {
         float sHeight = GraphicsDevice.PresentationParameters.BackBufferHeight;
 
         if (sWidth / resWidth > sHeight / resHeight) {
-            float aspect = sHeight / resHeight;
-            virtualWidth = (int)(aspect * resWidth);
+            float tempAspect = sHeight / resHeight;
+            virtualWidth = (int)(tempAspect * resWidth);
             virtualHeight = (int)sHeight;
         } else {
-            float aspect = sWidth / resWidth;
+            float tempAspect = sWidth / resWidth;
             virtualWidth = (int)sWidth;
-            virtualHeight = (int)(aspect * resHeight);
+            virtualHeight = (int)(tempAspect * resHeight);
         }
-        scaleMatrix = Matrix.CreateScale(virtualWidth / (float)resWidth);
+        aspect = virtualWidth / (float)resWidth;
+        scaleMatrix = Matrix.CreateScale(aspect);
         viewport = new Viewport{
             X = (int)(sWidth / 2 - virtualWidth / 2f),
             Y = (int)(sHeight / 2 - virtualHeight / 2f),
@@ -116,5 +185,25 @@ public class IdleClickerGame : Game {
             MinDepth = 0,
             MaxDepth = 1
         };
+    }
+
+    private static void UpdateMoneys(long l) {
+        moneys = l;
+    }
+
+    private static void UpdateNextUpgrade(long l) {
+        nextUpgrade = l;
+    }
+
+    private static void UpdateUpgradeCost(long l) {
+        upgradeCost = l;
+    }
+
+    private static void UpdateUpgradeNum() {
+        upgradeNum++;
+    }
+
+    private static void UpdateClickPower(long l) {
+        clickPower = l;
     }
 }

@@ -5,9 +5,13 @@
   <Config />
   <SourceFiles>
     <File>C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/ClickerCircle.png</File>
-    <File>C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/Font.spritefont</File>
+    <File>C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/PixelMonoBoldFont.spritefont</File>
+    <File>C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/PixelSCFont.spritefont</File>
+    <File>C:/Users/Tyler Rose/RiderProjects/IdleClicker/Content/UpgradeButton.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
   </DestFiles>

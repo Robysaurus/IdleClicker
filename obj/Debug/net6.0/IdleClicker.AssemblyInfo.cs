@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IdleClicker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+96bd0d022e887eb2a9132073883be3cf8358e4b5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4fbafaadcd7742371110f3c1bc079ee0364b4b4")]
 [assembly: System.Reflection.AssemblyProductAttribute("IdleClicker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IdleClicker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
